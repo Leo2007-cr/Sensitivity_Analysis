@@ -1,11 +1,6 @@
 import pandas as pd
 import yfinance as yf
 
-#Test: 
-print("works")
-exit()
-#Testende
-
 # Tickers:
 EQITY_TICKERS = ["NVDA", "XLI"] # Nvidia-Aktie- Preis und Industieunternehmen aus S&P500
 BOND_TICKER = "TLT" # ETF auf langfrisitge US-Treasuries (20 Jahre und handelbar)
@@ -54,7 +49,7 @@ def load_portfolio_assets(start = "2019-01-01", end = None):
     """
     return download_yahoo_data(ticker = PORTFOLIO_TICKERS, start = start, end = end)
 
-def load_10y_yield(start = "01-01-2019", end = None):
+def load_10y_yield(start = "2019-01-01", end = None):
     """
     Load the 10-Year Treasury Yield.
     Yahoo Finance ticker:
@@ -69,7 +64,7 @@ def load_10y_yield(start = "01-01-2019", end = None):
     
     return yield_data
 
-def load_all_projekt_data(start = "2019-01-01", end = None):
+def load_all_project_data(start = "2019-01-01", end = None):
     """
     Load all time series required for the project:
     NVDA, XLI, TLT and 10-Year Treasury Yield.

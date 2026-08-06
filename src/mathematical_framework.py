@@ -14,17 +14,33 @@ def calculate_log_returns(prices: pd.DataFrame) -> pd.DataFrame:
     return log_returns.dropna()
 
 
-def calculate_yield_change_bps(yields: pd.DataFrame) -> pd.DataFrame:
-
-    yield_change_bps = yields.diff() * 100
-    return yield_change_bps
-
-
-def detect_rate_shocks(yield_change_bps: pd.Series, quantile: float = 0.90) -> pd.Series:
-
+def detect_rate_shock_mask(yield_change_bps: pd.Series, quantile: float = 0.90) -> pd.Series:
+    """
+    Returns a boolean mask indicating interest rate shock days.
+    """
     threshold = yield_change_bps.abs().quantile(quantile)
-    shocks = yield_change_bps.abs() >= threshold
-    return shocks
+    return yield_change_bps.abs() >= threshold
+
+
+def shock_mask_with_lags(shock_mask: pd.Series, lag_days: int = 5) -> pd.Series:
+    extended_mask = shock_mask.copy()
+    shock_positions = np.where(shock_mask)[0]
+
+    for position in shock_positions:
+
+        end = min(position + lag_days + 1, len(extended_mask))
+
+        extended_mask.iloc[position:end] = True
+        
+    return extended_mask
+
+
+def detect_rate_shocks( yield_change_bps: pd.Series, quantile: float = 0.90) -> pd.Series:
+    """
+    Returns the yield changes on interest rate shock days.
+    """
+    shock_mask = detect_rate_shock_mask(yield_change_bps, quantile)
+    return yield_change_bps[shock_mask]
 
 
 def average_returns_during_shocks (asset_returns: pd.DataFrame, shock_mask: pd.Series) -> pd.Series:
@@ -69,7 +85,7 @@ def calculate_portfolio_volatility(returns: pd.DataFrame, weights: pd.Series, an
     return portfolio_volatility
 
 
-def optimize_tlt_weight(returns: pd.DataFrame, nvda_weight: float, xli_weight: float, tlt_range: np.ndarray = np.arrange(0, 0.55, 0.05)) -> pd.DataFrame:
+def optimize_tlt_weight(returns: pd.DataFrame, nvda_weight: float, xli_weight: float, tlt_range: np.ndarray = np.arange(0, 0.55, 0.05)) -> pd.DataFrame:
 
     results = []
     equity_total = nvda_weight + xli_weight
