@@ -225,8 +225,11 @@ def plot_sharpe_surface_heatmap(sharpe_matrix: pd.DataFrame, title: str = "Sharp
     plt.show()
 
 
-def plot_sharpe_surface_3d(sharpe_matrix: pd.DataFrame, title: str = "3D Sharpe Ratio Surface") -> None:
-    
+def plot_sharpe_surface_3d(
+    sharpe_matrix: pd.DataFrame,
+    title: str = "3D Sharpe Ratio Surface"
+) -> None:
+
     from mpl_toolkits.mplot3d import Axes3D
 
     x_values = sharpe_matrix.columns.astype(float)
@@ -238,7 +241,9 @@ def plot_sharpe_surface_3d(sharpe_matrix: pd.DataFrame, title: str = "3D Sharpe 
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111, projection="3d")
 
-    ax.plot_surface(X, Y, Z)
+    surface = ax.plot_surface(X, Y, Z, cmap="viridis")
+
+    fig.colorbar(surface, ax=ax, label="Sharpe Ratio")
 
     ax.set_title(title)
     ax.set_xlabel("NVDA Weight")
@@ -248,4 +253,21 @@ def plot_sharpe_surface_3d(sharpe_matrix: pd.DataFrame, title: str = "3D Sharpe 
     plt.tight_layout()
     plt.show()
 
+def plot_sharpe_ratio_by_lag(optimal_portfolios: pd.DataFrame) -> None:
 
+    plt.figure(figsize=(8,5))
+
+    plt.plot(optimal_portfolios.index, optimal_portfolios["Sharpe Ratio"], marker="o")
+
+    best_lag = optimal_portfolios["Sharpe Ratio"].idxmax()
+    best_sharpe = optimal_portfolios.loc[best_lag, "Sharpe Ratio"]
+
+    plt.scatter(best_lag, best_sharpe, s=100, label=f"Best Lag: {best_lag}")
+
+    plt.title("Optimal Sharpe Ratio Depending on Lag")
+    plt.xlabel("Lag after Interest Rate Shock")
+    plt.ylabel("Sharpe Ratio")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()

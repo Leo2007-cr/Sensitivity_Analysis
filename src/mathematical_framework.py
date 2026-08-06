@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 def get_prices(prices: pd.DataFrame) -> pd.DataFrame:
     """
@@ -132,3 +133,45 @@ def calculate_max_drawdown(returns: pd.Series) -> float:
     drawdown = cumulative_returns / running_max - 1
 
     return drawdown.min()
+
+def create_sharpe_matrix(returns):
+
+    sharpe_matrix = pd.DataFrame()
+
+    for nvda_weight in np.arange(0, 1.05, 0.05):
+
+        row = {}
+
+        for tlt_weight in np.arange(0, 1-nvda_weight+0.05, 0.05):
+
+            xli_weight = 1 - nvda_weight - tlt_weight
+
+            if xli_weight < 0:
+                continue
+
+            weights = {"NVDA": nvda_weight, "XLI": xli_weight, "TLT": tlt_weight}
+
+            portfolio_returns = calculate_portfolio_returns(returns,weights)
+
+            annual_return = portfolio_returns.mean()*252
+            annual_volatility = portfolio_returns.std()*np.sqrt(252)
+
+            sharpe = annual_return / annual_volatility
+
+            row[round(tlt_weight,2)] = sharpe
+
+        sharpe_matrix[round(nvda_weight,2)] = pd.Series(row)
+
+    return sharpe_matrix
+
+def plot_optimal_weights_by_lag(optimal_portfolios: pd.DataFrame) -> None:
+
+    optimal_portfolios[["NVDA Weight", "XLI Weight", "TLT Weight"]].plot(figsize=(10,6), marker="o")
+
+    plt.title("Optimal Portfolio Composition by Lag")
+    plt.xlabel("Lag after Interest Rate Shock")
+    plt.ylabel("Portfolio Weight")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
