@@ -73,7 +73,7 @@ def calculate_portfolio_returns (returns: pd.DataFrame, weights: pd.Series) -> p
     return portfolio_returns
 
 
-def calculate_portfolio_volatility(returns: pd.DataFrame, weights: pd.Series, annulazied: bool = True) -> float:
+def calculate_portfolio_volatility(returns: pd.DataFrame, weights: pd.Series, annualized: bool = True) -> float:
 
     weights_series = pd.Series(weights)
     returns = returns[weights_series.index]
@@ -81,7 +81,7 @@ def calculate_portfolio_volatility(returns: pd.DataFrame, weights: pd.Series, an
     weights_array = weights_series.values
     portfolio_variance = weights_array.T @ covariance_matrix @ weights_array
     portfolio_volatility = np.sqrt(portfolio_variance)
-    if annulazied:
+    if annualized:
         portfolio_volatility *= np.sqrt(252)
     return portfolio_volatility
 
@@ -104,8 +104,8 @@ def optimize_tlt_weight(returns: pd.DataFrame, nvda_weight: float, xli_weight: f
         annual_volatilty = portfolio_returns.std() * np.sqrt(252)
         sharpe_ratio = annual_return / annual_volatilty
 
-        results.append({"TLT Weight": tlt_weight, "NVDA Weight": adjusted_nvda_weight, "XLI Weight": xli_weight, 
-                        "Annual Return": annual_return, "Annual Volatility": annual_volatilty, "Annual Ratio": sharpe_ratio})
+        results.append({"TLT Weight": tlt_weight, "NVDA Weight": adjusted_nvda_weight, "XLI Weight": adjusted_xli_weight, 
+                        "Annual Return": annual_return, "Annual Volatility": annual_volatilty, "Sharpee Ratio": sharpe_ratio})
         
     return pd.DataFrame(results)
         
@@ -134,7 +134,7 @@ def calculate_max_drawdown(returns: pd.Series) -> float:
 
     return drawdown.min()
 
-def create_sharpe_matrix(returns):
+def create_sharpe_matrix(returns: pd.DataFrame, risk_free_rate: float = 0.0):
 
     sharpe_matrix = pd.DataFrame()
 
@@ -151,12 +151,11 @@ def create_sharpe_matrix(returns):
 
             weights = {"NVDA": nvda_weight, "XLI": xli_weight, "TLT": tlt_weight}
 
-            portfolio_returns = calculate_portfolio_returns(returns,weights)
+            portfolio_returns = calculate_portfolio_returns(returns, weights)
 
-            annual_return = portfolio_returns.mean()*252
-            annual_volatility = portfolio_returns.std()*np.sqrt(252)
+            metrics = calculate_performance_metrices(portfolio_returns)
 
-            sharpe = annual_return / annual_volatility
+            sharpe = metrics["Sharpe Ratio"]
 
             row[round(tlt_weight,2)] = sharpe
 
@@ -164,14 +163,5 @@ def create_sharpe_matrix(returns):
 
     return sharpe_matrix
 
-def plot_optimal_weights_by_lag(optimal_portfolios: pd.DataFrame) -> None:
 
-    optimal_portfolios[["NVDA Weight", "XLI Weight", "TLT Weight"]].plot(figsize=(10,6), marker="o")
-
-    plt.title("Optimal Portfolio Composition by Lag")
-    plt.xlabel("Lag after Interest Rate Shock")
-    plt.ylabel("Portfolio Weight")
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
 

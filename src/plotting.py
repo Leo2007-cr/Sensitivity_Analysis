@@ -271,3 +271,14 @@ def plot_sharpe_ratio_by_lag(optimal_portfolios: pd.DataFrame) -> None:
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+
+def plot_optimal_weights_by_lag(optimal_portfolios: pd.DataFrame) -> None:
+
+    optimal_portfolios[["NVDA Weight", "XLI Weight", "TLT Weight"]].plot(figsize=(10,6), marker="o")
+
+    plt.title("Optimal Portfolio Composition by Lag")
+    plt.xlabel("Lag after Interest Rate Shock")
+    plt.ylabel("Portfolio Weight")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
