@@ -1,4 +1,28 @@
+# Python
 __pycache__/
 *.pyc
-.DS_Store
+.venv/
+venv/
+.env
+
+# Jupyter
 .ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# LaTeX-Hilfsdateien
+*.aux
+*.log
+*.toc
+*.out
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# VS Code
+.vscode/
