@@ -3,7 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_normalized_prices(prices: pd.DataFrame) -> None:
+def _save(save_path) -> None:
+    """Save the current figure (must be called before plt.show(), which clears it)."""
+    if save_path is not None:
+        plt.savefig(save_path, bbox_inches="tight", dpi=150)
+
+
+def plot_normalized_prices(prices: pd.DataFrame, save_path=None) -> None:
 
     normalized_prices = prices / prices.iloc[0]
 
@@ -14,10 +20,11 @@ def plot_normalized_prices(prices: pd.DataFrame) -> None:
     plt.ylabel ("Normalized price")
     plt.grid (True)
     plt.tight_layout()
+    _save(save_path)
     plt.show()
 
 
-def plot_10y_yield(yield_series: pd.Series) -> None:
+def plot_10y_yield(yield_series: pd.Series, save_path=None) -> None:
 
     yield_series.plot(figsize=(12, 6))
 
@@ -26,7 +33,9 @@ def plot_10y_yield(yield_series: pd.Series) -> None:
     plt.ylabel ("10y Yield")
     plt.grid (True)
     plt.tight_layout()
-    
+    _save(save_path)
+    plt.show()
+
 
 
 def plot_interest_rate_shocks(yield_changes_bsp: pd.Series, shock_mask: pd.Series) -> None:
@@ -47,7 +56,7 @@ def plot_interest_rate_shocks(yield_changes_bsp: pd.Series, shock_mask: pd.Serie
     plt.show()
 
 
-def plot_yield_with_shock_days(yield_10y, shock_days, lag_days=0):
+def plot_yield_with_shock_days(yield_10y, shock_days, lag_days=0, save_path=None):
 
     plt.figure(figsize=(12, 5))
 
@@ -80,6 +89,7 @@ def plot_yield_with_shock_days(yield_10y, shock_days, lag_days=0):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
+    _save(save_path)
     plt.show()
 
 

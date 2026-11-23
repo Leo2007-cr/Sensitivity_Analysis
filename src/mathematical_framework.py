@@ -86,27 +86,30 @@ def calculate_portfolio_volatility(returns: pd.DataFrame, weights: pd.Series, an
     return portfolio_volatility
 
 
-def optimize_tlt_weight(returns: pd.DataFrame, nvda_weight: float, xli_weight: float, tlt_range: np.ndarray = np.arange(0, 0.55, 0.05)) -> pd.DataFrame:
+def optimize_tlt_weight(returns: pd.DataFrame, nvda_weight: float, xli_weight: float,
+                        tlt_range: np.ndarray = np.round(np.arange(0, 0.55, 0.05), 2),
+                        risk_free_rate: float = 0.0) -> pd.DataFrame:
 
     results = []
     equity_total = nvda_weight + xli_weight
+    if equity_total <= 0:
+        raise ValueError("nvda_weight + xli_weight must be positive")
 
     for tlt_weight in tlt_range:
         remaining_weight = 1 - tlt_weight
         adjusted_nvda_weight = remaining_weight * (nvda_weight / equity_total)
         adjusted_xli_weight = remaining_weight * (xli_weight / equity_total)
-        # Increasing TLT requires symmetric decreasing in XLI, NVDA with the half of the increase with respect wo NVDA, XLI
+        # Increasing TLT reduces NVDA and XLI proportionally to their original weights
 
         weights = {"NVDA": adjusted_nvda_weight, "XLI": adjusted_xli_weight, "TLT": tlt_weight}
 
         portfolio_returns = calculate_portfolio_returns(returns, weights)
-        annual_return = portfolio_returns.mean() * 252
-        annual_volatilty = portfolio_returns.std() * np.sqrt(252)
-        sharpe_ratio = annual_return / annual_volatilty
+        metrics = calculate_performance_metrices(portfolio_returns, risk_free_rate)
 
-        results.append({"TLT Weight": tlt_weight, "NVDA Weight": adjusted_nvda_weight, "XLI Weight": adjusted_xli_weight, 
-                        "Annual Return": annual_return, "Annual Volatility": annual_volatilty, "Sharpee Ratio": sharpe_ratio})
-        
+        results.append({"TLT Weight": tlt_weight, "NVDA Weight": adjusted_nvda_weight, "XLI Weight": adjusted_xli_weight,
+                        "Annual Return": metrics["Annual Return"], "Annual Volatility": metrics["Annual Volatility"],
+                        "Sharpe Ratio": metrics["Sharpe Ratio"], "Max Drawdown": metrics["Max Drawdown"]})
+
     return pd.DataFrame(results)
         
 
@@ -138,13 +141,14 @@ def create_sharpe_matrix(returns: pd.DataFrame, risk_free_rate: float = 0.0):
 
     sharpe_matrix = pd.DataFrame()
 
-    for nvda_weight in np.arange(0, 1.05, 0.05):
+    # Rounded grid avoids float artefacts like 0.15000000000000002 (which created gaps in the grid)
+    for nvda_weight in np.round(np.linspace(0, 1, 21), 2):
 
         row = {}
 
-        for tlt_weight in np.arange(0, 1-nvda_weight+0.05, 0.05):
+        for tlt_weight in np.round(np.arange(0, 1 - nvda_weight + 1e-9, 0.05), 2):
 
-            xli_weight = 1 - nvda_weight - tlt_weight
+            xli_weight = round(1 - nvda_weight - tlt_weight, 2)
 
             if xli_weight < 0:
                 continue
@@ -153,13 +157,13 @@ def create_sharpe_matrix(returns: pd.DataFrame, risk_free_rate: float = 0.0):
 
             portfolio_returns = calculate_portfolio_returns(returns, weights)
 
-            metrics = calculate_performance_metrices(portfolio_returns)
+            metrics = calculate_performance_metrices(portfolio_returns, risk_free_rate)
 
             sharpe = metrics["Sharpe Ratio"]
 
-            row[round(tlt_weight,2)] = sharpe
+            row[tlt_weight] = sharpe
 
-        sharpe_matrix[round(nvda_weight,2)] = pd.Series(row)
+        sharpe_matrix[nvda_weight] = pd.Series(row)
 
     return sharpe_matrix
 

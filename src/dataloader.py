@@ -40,14 +40,14 @@ def load_equity_data(start = "2019-01-01", end = None):
     """
     Load NVIDIA and industrial equity data: NVDA and XLI
     """
-    return download_yahoo_data(ticker = EQITY_TICKERS, start = start, end = end)
+    return download_yahoo_data(tickers = EQITY_TICKERS, start = start, end = end)
 
 def load_portfolio_assets(start = "2019-01-01", end = None):
     """
     Load tradable portfolio assets:
     NVDA, XLI and TLT.
     """
-    return download_yahoo_data(ticker = PORTFOLIO_TICKERS, start = start, end = end)
+    return download_yahoo_data(tickers = PORTFOLIO_TICKERS, start = start, end = end)
 
 def load_10y_yield(start = "2019-01-01", end = None):
     """
@@ -60,7 +60,7 @@ def load_10y_yield(start = "2019-01-01", end = None):
     """
     yield_data = download_yahoo_data(tickers = YIELD_TICKER, start = start, end = end)
    
-    yield_data.columns = ["10Y-Yield"]
+    yield_data.columns = ["10Y_Yield"]
     
     return yield_data
 
